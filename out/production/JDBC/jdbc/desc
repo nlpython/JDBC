@@ -1,0 +1,73 @@
+1. 详解各个对象
+    (1) DriverManger: 驱动管理对象
+        功能:
+           1) 注册驱动
+                Class.forName("com.mysql.cj.jdbc.Driver");
+           2) 获取数据库连接
+                Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/mytestdb", "root", "root");
+                参数:
+                  * url: 指定连接路径
+                      * 语法: jdbc:mysql://ip地址(域名):端口号/数据库名称
+                  * user: 用户名
+                  * password: 密码
+    (2) Connection: 数据库管理对象
+        功能:
+            1) 获取执行的sql的对象
+                * Statement createStatement()
+                * PreparedStatement prepareStatement(String sql)
+            2) 管理事务
+                * 开启事务
+                    void setAutoCommit(boolean autoCommit)
+                * 提交事务
+                    commit()
+                * 回滚事务
+                    rollback()
+    (3) Statement: 执行sql的对象
+        功能:
+            1) 执行sql
+                * int executeUpdate(String sql): 执行DML (insert, update, delete)语句, DDL(create, alter, drop)语句
+                    返回值代表影响的行数
+                * ResultSet executeQuery(String sql): 执行DQL(select)语句
+    (4) ResultSet: 结果集对象
+        功能:
+            * next(): 游标向下移动一行
+            * getXX(): 获取数据  XX代表数据类型
+                1) getInt(int index) index代表列的编号
+                2) String: 代表列的名称 如: getString(String columnLabel)
+    (5) PreparedStatement: 执行sql对象
+        1) SQL注入问题: 在拼接sql时, 有一些特殊关键字参与字符串的拼接, 会造成安全问题
+            * 输入任意用户名, 密码 a' or 'a' = 'a4
+            * sql: select * from user where username = 'sljf' and password = 'a' or 'a' = 'a'
+        2) 解决注入问题: 使用PreparedStatement对象来解决
+        3) 预编译的SQL: 参数使用 ? 作为占位符
+        4) 步骤:
+            * 注册驱动
+            * 获取数据库连接
+            * 定义sql
+                -将 ? 作为占位符使用  select * from user where username = ? and password = ?
+        5) 获取执行sql语句的对象 PreparedStatement  Connection.prepareStatement(String sql)
+        6) 给 ? 赋值
+            * 方法: setXX(参数1, 参数2)
+               -参数1: ?编号为1的位置
+               -参数2: 该位置对应的值
+        7) 不再需要传递sql语句, 在5)中已经处理
+        8) 关闭资源
+
+        后期都会使用PreparedStatement对象而不是Statement对象
+        优点:
+            * 效率更高
+            * 防止sql注入
+
+2.JDBC事务管理
+    1) 事务: 一个包含多个步骤的操作业务操作, 如果这个业务被事务管理, 则这多个步骤要么同时成功, 要么同时失败
+    2) 操作:
+         * 开启事务
+         * 提交事务
+         * 回滚事务
+    3) 使用Connection对象来管理事务
+         * 开启事务: setAutoCommit(boolean autoCommit): 调用该方法设置参数为false, 即开启事务
+            -在执行sql之前
+         * 提交事务: commit()
+            -当所有sql都执行完提交事务
+         * 回滚事务: rollback()
+            -出现异常时回滚事务
